@@ -639,7 +639,7 @@
 
               <div class="report-totals">
                 <div v-for="(value, key) in activeReport.payload.totals" :key="key" class="report-total-card">
-                  <span>{{ key }}</span>
+                  <span>{{ formatReportTotalLabel(key) }}</span>
                   <strong>{{ value }}</strong>
                 </div>
               </div>
@@ -979,6 +979,17 @@ function formatDateTime(value) {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(new Date(value));
+}
+
+function formatReportTotalLabel(key) {
+  const labels = {
+    count: 'Kopskaits',
+    inspectionDue: 'Inspekcija drīzumā',
+    issued: 'Izsniegti',
+    returned: 'Atgriezti',
+  };
+
+  return labels[key] || key;
 }
 
 function currentClientName(cylinder) {
