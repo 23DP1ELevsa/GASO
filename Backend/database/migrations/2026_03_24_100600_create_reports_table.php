@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('reports', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('employee_id')->constrained()->restrictOnDelete();
+            $table->foreignId('employee_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamp('created_at')->useCurrent();
             $table->enum('type', ['balonu atskaite', 'klientu atskaite', 'darijumu atskaite']);
         });

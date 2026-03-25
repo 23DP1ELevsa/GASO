@@ -40,10 +40,12 @@ Route::middleware('auth.token')->group(function () {
         Route::delete('/cylinders/{cylinder}', [CylinderController::class, 'destroy']);
 
         Route::post('/clients', [ClientController::class, 'store']);
+        Route::put('/clients/{client}', [ClientController::class, 'update']);
         Route::delete('/clients/{client}', [ClientController::class, 'destroy']);
 
         Route::get('/employees', [EmployeeController::class, 'index']);
         Route::post('/employees', [EmployeeController::class, 'store']);
+        Route::put('/employees/{employee}', [EmployeeController::class, 'update']);
         Route::delete('/employees/{employee}', [EmployeeController::class, 'destroy']);
     });
 });

@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('cylinder_id')->constrained()->restrictOnDelete();
             $table->foreignId('client_id')->constrained()->restrictOnDelete();
-            $table->foreignId('employee_id')->constrained()->restrictOnDelete();
+            $table->foreignId('employee_id')->nullable()->constrained()->nullOnDelete();
             $table->date('issue_date');
             $table->date('return_date')->nullable();
             $table->enum('action_type', ['izsniegts', 'atgriezts']);

@@ -1,53 +1,134 @@
-# GASO - Gazes balonu uzskaites sistema
+# GASO - Gāzes balonu uzskaites sistēma
 
-Projekts ir sadalits divas mapes:
+GASO projekts sastāv no divām atsevišķām daļām:
 
-- `Backend` - Laravel 13 API, kuru var palaist ar `php artisan serve`
-- `Frontend` - Vue 3 + Vite lietotaja saskarne, kuru var palaist ar `npm run dev`
+- `Backend` - Laravel 13 API ar datubāzi un biznesa loģiku.
+- `Frontend` - Vue 3 + Vite lietotāja saskarne.
 
-## Ieviesas funkcijas
+## Funkcionalitāte
 
-- lietotaju pieslegsanas ar lomam: administrators, darbinieks, klients;
-- gazes balonu registrs ar statusiem, meklešanu un redigešanu;
-- balonu izsniegsanas un atgriesanas darijumi;
-- klientu un darbinieku uzturesana administratoram;
-- atskaites par baloniem, klientiem un darijumiem;
-- demo dati, lai sistemu varetu uzreiz parbaudit.
+- pieslēgšanās ar lomām: administrators, darbinieks, klients;
+- balonu reģistrs ar statusiem, filtrēšanu un rediģēšanu;
+- balonu izsniegšana un atgriešana;
+- klientu un darbinieku pārvaldība administratoram;
+- atskaišu ģenerēšana;
+- demo dati ātrai pārbaudei.
 
-## Backend palaisana
+## Prasības
 
-1. Atver `GASO/Backend`
-2. Nokopē `.env.example` uz `.env`, ja tas vel nav izdarits
-3. Ja izmanto XAMPP + MySQL, izveido datubazi `gaso_backend`
-4. Palaid:
+Lai projektu palaistu lokāli, nepieciešams:
+
+- PHP 8.3 vai jaunāka versija;
+- Composer;
+- Node.js 18+ un npm;
+- MySQL serveris, piemēram, XAMPP.
+
+## Kā palaist visu projektu
+
+Projekts jāpalaiž divās atsevišķās termināļa cilnēs: viena backendam, otra frontendam.
+
+### 1. Palaist backend
+
+Atver termināli mapē `GASO/Backend` un izpildi:
 
 ```powershell
 composer install
+copy .env.example .env
+php artisan key:generate
 php artisan migrate:fresh --seed
 php artisan serve
 ```
 
-Backend adrese pec noklusejuma: `http://127.0.0.1:8000`
+Backend pēc noklusējuma būs pieejams šeit:
 
-## Frontend palaisana
+```text
+http://127.0.0.1:8000
+```
 
-1. Atver `GASO/Frontend`
-2. Nokopē `.env.example` uz `.env`, ja vajag mainit API adresi
-3. Palaid:
+### 2. Palaist frontend
+
+Atver otru termināli mapē `GASO/Frontend` un izpildi:
 
 ```powershell
 npm install
+copy .env.example .env
 npm run dev
 ```
 
-Frontend adrese pec noklusejuma: `http://127.0.0.1:5173`
+Frontend pēc noklusējuma būs pieejams šeit:
 
-## Demo pieslegsanas dati
+```text
+http://127.0.0.1:5173
+```
 
-- Administrators: `admin@gaso.lv` / `password`
+### 3. Atvērt projektu pārlūkā
+
+Kad abas daļas ir palaistas, atver pārlūkā:
+
+```text
+http://127.0.0.1:5173
+```
+
+Frontend automātiski sazināsies ar backend API adresi:
+
+```text
+http://127.0.0.1:8000/api
+```
+
+## Backend palaišana
+
+Atver termināli mapē `GASO/Backend` un izpildi:
+
+```powershell
+composer install
+copy .env.example .env
+php artisan key:generate
+php artisan migrate:fresh --seed
+php artisan serve
+```
+
+Backend būs pieejams šeit:
+
+```text
+http://127.0.0.1:8000
+```
+
+Ja atkarības un `.env` jau ir sagatavoti, ikdienas palaišanai parasti pietiek ar:
+
+```powershell
+php artisan serve
+```
+
+## Frontend palaišana
+
+Atver termināli mapē `GASO/Frontend` un izpildi:
+
+```powershell
+npm install
+copy .env.example .env
+npm run dev
+```
+
+Frontend būs pieejams šeit:
+
+```text
+http://127.0.0.1:5173
+```
+
+Ja atkarības un `.env` jau ir sagatavoti, ikdienas palaišanai parasti pietiek ar:
+
+```powershell
+npm run dev
+```
+
+Frontend izmanto backend API adresi:
+
+```text
+http://127.0.0.1:8000/api
+```
+
+## Demo piekļuves dati
+
+- Administrators: `admin1@gaso.lv` / `password`
 - Darbinieks: `darbinieks@gaso.lv` / `password`
 - Klients: `klients1` / `password`
-
-## XAMPP piezime
-
-Ja Backend palaid ar XAMPP MySQL, `.env.example` jau ir sagatavots darbam ar `root` lietotaju un datubazi `gaso_backend`. Ja parole atskiras, pielabo `DB_PASSWORD` vertibu `.env` faila.

@@ -54,6 +54,7 @@ class TransactionController extends Controller
 
         $issuedStatus = Status::query()->where('name', 'pie klienta')->firstOrFail();
 
+        // Issuing creates a new history entry instead of mutating earlier transactions.
         $transaction = Transaction::create([
             'cylinder_id' => $cylinder->id,
             'client_id' => $data['client_id'],
@@ -86,7 +87,7 @@ class TransactionController extends Controller
 
         if (! $latestTransaction || $latestTransaction->action_type !== 'izsniegts') {
             return response()->json([
-                'message' => 'Balonam nav aktivs izsniegsanas ieraksts.',
+                'message' => 'Balonam nav aktīvs izsniegšanas ieraksts.',
             ], 422);
         }
 
@@ -94,10 +95,11 @@ class TransactionController extends Controller
 
         if ($returnStatus->name === 'pie klienta') {
             return response()->json([
-                'message' => 'Atgrieztam balonam nevar saglabat statusu pie klienta.',
+                'message' => 'Atgrieztam balonam nevar saglabāt statusu pie klienta.',
             ], 422);
         }
 
+        // Returns are also stored as separate entries so issue and return actions remain auditable.
         $transaction = Transaction::create([
             'cylinder_id' => $cylinder->id,
             'client_id' => $latestTransaction->client_id,
@@ -110,7 +112,7 @@ class TransactionController extends Controller
         $cylinder->update(['status_id' => $returnStatus->id]);
 
         return response()->json([
-            'message' => 'Balons pienemts atpakal.',
+            'message' => 'Balons pieņemts atpakaļ.',
             'data' => $transaction->load(['cylinder:id,serial_number', 'client:id,name,surname', 'employee:id,name,surname']),
         ], 201);
     }

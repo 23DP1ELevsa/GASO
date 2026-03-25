@@ -67,7 +67,7 @@ class ReportController extends Controller
         };
 
         return response()->json([
-            'message' => 'Atskaite izgenereeta.',
+            'message' => 'Atskaite izģenerēta.',
             'data' => [
                 'report' => $report->load('employee:id,name,surname'),
                 'payload' => $payload,

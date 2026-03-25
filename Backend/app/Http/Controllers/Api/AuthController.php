@@ -34,7 +34,7 @@ class AuthController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'Pieslegsanas veiksmiga.',
+            'message' => 'Pieslēgšanās veiksmīga.',
             'data' => [
                 'token' => $plainToken,
                 'actorType' => $actorType,

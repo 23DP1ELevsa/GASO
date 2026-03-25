@@ -71,13 +71,13 @@ class CylinderController extends Controller
     {
         if ($cylinder->transactions()->exists()) {
             return response()->json([
-                'message' => 'Balonu nevar dzest, jo tam ir piesaistita darijumu vesture.',
+                'message' => 'Balonu nevar dzēst, jo tam ir piesaistīta darījumu vēsture.',
             ], 422);
         }
 
         $cylinder->delete();
 
-        return response()->json(['message' => 'Balons dzests.']);
+        return response()->json(['message' => 'Balons dzēsts.']);
     }
 
     public function changeStatus(Request $request, Cylinder $cylinder): JsonResponse
