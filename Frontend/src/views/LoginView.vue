@@ -1,7 +1,6 @@
 <template>
   <main class="login-shell">
     <section class="login-hero">
-      <p class="eyebrow">GASO</p>
       <h1>Gāzes balonu uzskaites sistēma</h1>
       <p class="lead">
         Vienota darba vide balonu uzskaitei, klientu apkalpošanai un darījumu vēsturei.
@@ -19,19 +18,18 @@
 
     <section class="login-panel panel">
       <div>
-        <p class="eyebrow">Pieslēgšanās logs</p>
         <h2>Ienākt sistēmā</h2>
       </div>
 
       <form class="stack" @submit.prevent="submitLogin">
         <label>
           <span>Lietotājvārds vai e-pasts</span>
-          <input v-model.trim="form.login" type="text" placeholder="admin1@gaso.lv vai klients1" required />
+          <input v-model.trim="form.login" type="text" placeholder="E-pasts" required />
         </label>
 
         <label>
           <span>Parole</span>
-          <input v-model="form.password" type="password" placeholder="password" required />
+          <input v-model="form.password" type="password" placeholder="Parole" required />
         </label>
 
         <button class="primary-button" type="submit" :disabled="submitting">

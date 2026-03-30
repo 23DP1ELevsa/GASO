@@ -17,10 +17,22 @@ class ReportController extends Controller
     {
         return response()->json([
             'data' => Report::query()
-                ->with('employee:id,name,surname')
+                ->with('employee:id,name,surname,email')
                 ->latest('created_at')
                 ->limit(20)
                 ->get(),
+        ]);
+    }
+
+    public function show(Report $report): JsonResponse
+    {
+        $report->load('employee:id,name,surname,email');
+
+        return response()->json([
+            'data' => [
+                'report' => $report,
+                'payload' => $report->payload ?? $this->buildPayload($report->type),
+            ],
         ]);
     }
 
@@ -30,18 +42,32 @@ class ReportController extends Controller
             'type' => ['required', Rule::in(['balonu atskaite', 'klientu atskaite', 'darijumu atskaite'])],
         ]);
 
+        $payload = $this->buildPayload($data['type']);
+
         $report = Report::create([
             'employee_id' => $this->currentActor($request)?->id,
+            'payload' => $payload,
             'type' => $data['type'],
         ]);
 
-        $payload = match ($data['type']) {
+        return response()->json([
+            'message' => 'Atskaite izģenerēta.',
+            'data' => [
+                'report' => $report->load('employee:id,name,surname,email'),
+                'payload' => $payload,
+            ],
+        ]);
+    }
+
+    private function buildPayload(string $type): array
+    {
+        return match ($type) {
             'balonu atskaite' => [
                 'totals' => [
                     'count' => Cylinder::count(),
                     'inspectionDue' => Cylinder::whereDate('inspection_date', '<=', now()->addDays(30)->toDateString())->count(),
                 ],
-                'items' => Cylinder::query()->with('status:id,name')->orderBy('serial_number')->get(),
+                'items' => Cylinder::query()->with('status:id,name')->orderBy('serial_number')->get()->all(),
             ],
             'klientu atskaite' => [
                 'totals' => [
@@ -51,7 +77,8 @@ class ReportController extends Controller
                     ->withCount('transactions')
                     ->orderBy('surname')
                     ->orderBy('name')
-                    ->get(),
+                    ->get()
+                    ->all(),
             ],
             default => [
                 'totals' => [
@@ -62,16 +89,9 @@ class ReportController extends Controller
                 'items' => Transaction::query()
                     ->with(['cylinder:id,serial_number', 'client:id,name,surname', 'employee:id,name,surname'])
                     ->latest()
-                    ->get(),
+                    ->get()
+                    ->all(),
             ],
         };
-
-        return response()->json([
-            'message' => 'Atskaite izģenerēta.',
-            'data' => [
-                'report' => $report->load('employee:id,name,surname'),
-                'payload' => $payload,
-            ],
-        ]);
     }
 }

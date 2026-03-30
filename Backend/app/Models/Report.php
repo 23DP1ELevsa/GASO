@@ -15,6 +15,7 @@ class Report extends Model
     protected $fillable = [
         'employee_id',
         'created_at',
+        'payload',
         'type',
     ];
 
@@ -22,6 +23,7 @@ class Report extends Model
     {
         return [
             'created_at' => 'datetime',
+            'payload' => 'array',
         ];
     }
 

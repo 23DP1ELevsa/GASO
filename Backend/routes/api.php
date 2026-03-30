@@ -32,6 +32,7 @@ Route::middleware('auth.token')->group(function () {
 
         Route::get('/reports', [ReportController::class, 'index']);
         Route::get('/reports/generate', [ReportController::class, 'generate']);
+        Route::get('/reports/{report}', [ReportController::class, 'show']);
     });
 
     Route::middleware('role:admin')->group(function () {

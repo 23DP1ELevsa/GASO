@@ -2,7 +2,6 @@
   <main class="dashboard-shell">
     <aside class="dashboard-sidebar panel">
       <div>
-        <p class="eyebrow">GASO panelis</p>
         <h1>Balonu uzskaite</h1>
         <p class="sidebar-copy">
           Pieslēgtais lietotājs: {{ fullName }}. Loma: {{ roleLabel }}.
@@ -11,7 +10,7 @@
 
       <div class="sidebar-summary">
         <div>
-          <span class="sidebar-label">E-pasts</span>
+          <span class="sidebar-label">E-pasts:</span>
           <strong>{{ session?.user?.email }}</strong>
         </div>
         <div v-if="isClient">
@@ -40,7 +39,6 @@
 
         <AppSection
           id="overview"
-          eyebrow="Darba kopsavilkums"
           title="Sistēma vienuviet"
           :description="isClient ? 'Klients redz savu informāciju un darījumu vēsturi.' : 'Darbinieki var pārvaldīt balonus, darījumus un veidot atskaites.'"
         >
@@ -608,7 +606,10 @@
               <ul class="breakdown-list">
                 <li v-for="item in paginatedReports" :key="item.id">
                   <span>{{ item.type }}</span>
-                  <strong>{{ item.employee?.name }} {{ item.employee?.surname }}</strong>
+                  <div class="button-row compact-row people-actions">
+                    <strong>{{ item.employee?.name }} {{ item.employee?.surname }}</strong>
+                    <button class="ghost-button tiny-button" type="button" @click="viewReport(item.id)">Skatīt</button>
+                  </div>
                 </li>
               </ul>
 
@@ -635,7 +636,9 @@
 
             <div class="panel inset-panel" v-if="activeReport">
               <h3>{{ activeReport.report.type }}</h3>
-              <p class="section-description">Izveidota {{ formatDateTime(activeReport.report.created_at) }}</p>
+              <p class="section-description">
+                Izveidoja: {{ activeReportCreatorLogin }}. 
+              </p>
 
               <div class="report-totals">
                 <div v-for="(value, key) in activeReport.payload.totals" :key="key" class="report-total-card">
@@ -913,6 +916,16 @@ const paginatedReports = computed(() => {
   return reports.value.slice(startIndex, startIndex + reportsPerPage);
 });
 
+const activeReportCreatorLogin = computed(() => {
+  const employee = activeReport.value?.report?.employee;
+
+  if (!employee) {
+    return '-';
+  }
+
+  return employee.email || `${employee.name} ${employee.surname}`;
+});
+
 const clientAddress = computed(() => {
   const user = session.value?.user;
 
@@ -984,7 +997,7 @@ function formatDateTime(value) {
 function formatReportTotalLabel(key) {
   const labels = {
     count: 'Kopskaits',
-    inspectionDue: 'Inspekcija drīzumā',
+    inspectionDue: 'Inspekcija drīzumā (30 dienu laikā)',
     issued: 'Izsniegti',
     returned: 'Atgriezti',
   };
@@ -1448,6 +1461,17 @@ async function generateReport(type) {
     await refreshReports();
     currentReportsPage.value = 1;
     setNotice('success', `${type} izveidota.`);
+  } catch (error) {
+    setNotice('error', extractError(error));
+  }
+}
+
+async function viewReport(reportId) {
+  try {
+    const response = await api.get(`/reports/${reportId}`);
+    activeReport.value = response.data.data;
+    pages.activeReportItems = 1;
+    setNotice('success', 'Atskaite atvērta.');
   } catch (error) {
     setNotice('error', extractError(error));
   }
