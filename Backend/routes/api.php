@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\StatusController;
 use App\Http\Controllers\Api\TransactionController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/register/admin', [AuthController::class, 'adminRegistrationStatus']);
+Route::post('/register/admin', [AuthController::class, 'registerAdmin']);
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth.token')->group(function () {

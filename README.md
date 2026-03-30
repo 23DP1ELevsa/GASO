@@ -75,6 +75,8 @@ Frontend automātiski sazināsies ar backend API adresi:
 http://127.0.0.1:8000/api
 ```
 
+Administratora reģistrācijas sadaļa atrodas login lapā. Tā ļauj publiski izveidot tikai pirmo administratoru; kad pirmais administrators ir izveidots, nākamos administratorus var pievienot tikai no administratora paneļa.
+
 ## Backend palaišana
 
 Atver termināli mapē `GASO/Backend` un izpildi:
