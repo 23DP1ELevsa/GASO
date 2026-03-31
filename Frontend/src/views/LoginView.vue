@@ -9,8 +9,8 @@
       <p class="lead login-highlight">
         {{
           adminRegistrationAvailable
-            ? 'Sistēmā vēl nav administratora. Izveido pirmo administratora kontu un turpini darbu bez seederiem.'
-            : 'Administratora reģistrācijas sadaļa ir pieejama šeit pašā login lapā, bet pēc pirmā administratora izveides tā kļūst tikai informatīva.'
+            ? 'Sistēmā vēl nav neviena lietotāja. Izveido pirmo administratora kontu un turpini darbu bez seederiem.'
+            : 'Pirmais lietotājs sistēmā jau ir izveidots. Administratorus turpmāk var pievienot tikai no administratora paneļa.'
         }}
       </p>
 
@@ -36,6 +36,7 @@
             Pieslēgties
           </button>
           <button
+            v-if="adminRegistrationAvailable"
             class="ghost-button tiny-button"
             type="button"
             :class="{ 'is-active': mode === 'register' }"
@@ -49,8 +50,8 @@
         <p v-if="mode === 'register'" class="section-description">
           {{
             adminRegistrationAvailable
-              ? 'Publiski var izveidot tikai pirmo administratora kontu. Pēc tam jaunus administratorus varēs pievienot no paneļa.'
-              : 'Pirmais administrators sistēmā jau ir izveidots. Nākamos administratorus var pievienot tikai no administratora paneļa.'
+              ? 'Publiski var izveidot tikai pirmo sistēmas lietotāju, kam tiek piešķirta administratora loma.'
+              : 'Sistēmā jau ir lietotāji. Nākamos administratorus var pievienot tikai no administratora paneļa.'
           }}
         </p>
       </div>
@@ -185,8 +186,13 @@ async function loadAdminRegistrationStatus() {
     const response = await api.get('/register/admin');
     adminRegistrationAvailable.value = Boolean(response.data.data?.available);
 
+    if (!adminRegistrationAvailable.value && mode.value === 'register') {
+      mode.value = 'login';
+    }
+
   } catch {
     adminRegistrationAvailable.value = false;
+    mode.value = 'login';
   }
 }
 

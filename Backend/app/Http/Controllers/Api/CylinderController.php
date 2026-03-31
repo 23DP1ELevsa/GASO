@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cylinder;
+use App\Models\Status;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -47,6 +48,10 @@ class CylinderController extends Controller
     {
         $data = $this->validateCylinder($request);
 
+        if ($response = $this->rejectIssuedStatus($data['status_id'])) {
+            return $response;
+        }
+
         $cylinder = Cylinder::create($data)->load('status:id,name');
 
         return response()->json([
@@ -57,7 +62,17 @@ class CylinderController extends Controller
 
     public function update(Request $request, Cylinder $cylinder): JsonResponse
     {
+        if ($cylinder->status?->name === 'pie klienta') {
+            return response()->json([
+                'message' => 'Balonu nevar rediģēt, kamēr tas atrodas pie klienta.',
+            ], 422);
+        }
+
         $data = $this->validateCylinder($request, $cylinder->id);
+
+        if ($response = $this->rejectIssuedStatus($data['status_id'])) {
+            return $response;
+        }
 
         $cylinder->update($data);
 
@@ -86,6 +101,16 @@ class CylinderController extends Controller
             'status_id' => ['required', 'exists:statuses,id'],
         ]);
 
+        if ($cylinder->status?->name === 'pie klienta') {
+            return response()->json([
+                'message' => 'Balonam, kas atrodas pie klienta, statusu var mainīt tikai izsniegšanas un atgriešanas sadaļā.',
+            ], 422);
+        }
+
+        if ($response = $this->rejectIssuedStatus($data['status_id'])) {
+            return $response;
+        }
+
         $cylinder->update($data);
 
         return response()->json([
@@ -104,5 +129,18 @@ class CylinderController extends Controller
             'inspection_date' => ['required', 'date', 'after_or_equal:manufacture_date'],
             'notes' => ['nullable', 'string'],
         ]);
+    }
+
+    private function rejectIssuedStatus(int $statusId): ?JsonResponse
+    {
+        $status = Status::query()->find($statusId);
+
+        if ($status?->name !== 'pie klienta') {
+            return null;
+        }
+
+        return response()->json([
+            'message' => 'Balonu pārvaldībā nevar iestatīt statusu "pie klienta". To dara sadaļā Izsniegšana un atgriešana.',
+        ], 422);
     }
 }

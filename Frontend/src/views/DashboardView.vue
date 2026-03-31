@@ -147,8 +147,8 @@
                       <td>{{ currentClientName(cylinder) }}</td>
                       <td>
                         <div class="inline-form compact-inline">
-                          <select v-model="statusDrafts[cylinder.id]">
-                            <option v-for="status in statuses" :key="status.id" :value="status.id">
+                          <select v-model="statusDrafts[cylinder.id]" :disabled="isIssuedCylinder(cylinder)">
+                            <option v-for="status in statusOptionsForCylinder(cylinder)" :key="status.id" :value="status.id">
                               {{ status.name }}
                             </option>
                           </select>
@@ -185,7 +185,7 @@
                 <span>Statuss</span>
                 <select v-model="cylinderForm.status_id" required>
                   <option value="" disabled>Izvēlēties statusu</option>
-                  <option v-for="status in statuses" :key="status.id" :value="String(status.id)">
+                  <option v-for="status in managementStatuses" :key="status.id" :value="String(status.id)">
                     {{ status.name }}
                   </option>
                 </select>
@@ -775,6 +775,7 @@ import { clearSession, getSession, setSession } from '../lib/session';
 
 const router = useRouter();
 
+// Sesija glabā aktuālo lietotāju un viņa piekļuves kontekstu visam skatam.
 const session = ref(getSession());
 const booting = ref(true);
 
@@ -790,6 +791,7 @@ const dashboard = reactive({
   recentTransactions: [],
 });
 
+// Šie saraksti aizpilda tabulas, filtrus un izvēlnes dažādām lomām.
 const statuses = ref([]);
 const cylinders = ref([]);
 const clients = ref([]);
@@ -875,6 +877,7 @@ const deleteEmployeeId = ref('');
 const selectedClientEditId = ref('');
 const selectedEmployeeEditId = ref('');
 
+// Lomas nosaka, kuras sadaļas un API pieprasījumi vispār ir pieejami šajā skatā.
 const isEmployee = computed(() => session.value?.actorType === 'employee');
 const isAdmin = computed(() => isEmployee.value && session.value?.user?.role === 'administrators');
 const isClient = computed(() => session.value?.actorType === 'client');
@@ -892,9 +895,13 @@ const roleLabel = computed(() => {
   return session.value?.user?.role === 'administrators' ? 'Administrators' : 'Darbinieks';
 });
 
+// Šie aprēķinātie saraksti uztur formu izvēles sinhronas ar aktuālajiem balonu statusiem.
 const issuedCylinders = computed(() => cylinders.value.filter((item) => item.status?.name === 'pie klienta'));
 const availableCylinders = computed(() => cylinders.value.filter((item) => item.status?.name !== 'pie klienta'));
+const managementStatuses = computed(() => statuses.value.filter((item) => item.name !== 'pie klienta'));
 const returnStatuses = computed(() => statuses.value.filter((item) => item.name !== 'pie klienta'));
+
+// Katrai tabulai ir sava lapošana, tāpēc šeit tiek veidoti konkrētie lapu dati attēlošanai.
 const totalRecentTransactionsPages = computed(() => totalPagesFor(dashboard.recentTransactions.length, itemsPerPage));
 const paginatedRecentTransactions = computed(() => paginateItems(dashboard.recentTransactions, pages.recentTransactions, itemsPerPage));
 const totalCylindersPages = computed(() => totalPagesFor(cylinders.value.length, itemsPerPage));
@@ -916,6 +923,7 @@ const paginatedReports = computed(() => {
   return reports.value.slice(startIndex, startIndex + reportsPerPage);
 });
 
+// Atskaitē parāda autoru arī tad, ja pieejams tikai e-pasts, nevis pilns vārds.
 const activeReportCreatorLogin = computed(() => {
   const employee = activeReport.value?.report?.employee;
 
@@ -926,6 +934,7 @@ const activeReportCreatorLogin = computed(() => {
   return employee.email || `${employee.name} ${employee.surname}`;
 });
 
+// Klienta adrese tiek salikta no atsevišķiem profila laukiem vienā lasāmā rindā.
 const clientAddress = computed(() => {
   const user = session.value?.user;
 
@@ -945,6 +954,7 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
+// Universāla lapošanas loģika, lai katrai tabulai nevajadzētu atkārtot vienu un to pašu kodu.
 function totalPagesFor(totalItems, perPage) {
   return Math.max(1, Math.ceil(totalItems / perPage));
 }
@@ -962,6 +972,7 @@ function changePage(key, delta, totalPages) {
   pages[key] = Math.min(totalPages, Math.max(1, pages[key] + delta));
 }
 
+// Paziņojumi tiek rādīti kā īslaicīgi toast ziņojumi lietotāja darbību rezultātam.
 function setNotice(type, text) {
   notice.type = type;
   notice.text = text;
@@ -1015,6 +1026,18 @@ function currentClientName(cylinder) {
   return client ? `${client.name} ${client.surname}` : '-';
 }
 
+function isIssuedCylinder(cylinder) {
+  return cylinder.status?.name === 'pie klienta';
+}
+
+function isIssuedStatusId(statusId) {
+  return statuses.value.some((status) => status.id === Number(statusId) && status.name === 'pie klienta');
+}
+
+function statusOptionsForCylinder(cylinder) {
+  return isIssuedCylinder(cylinder) ? statuses.value : managementStatuses.value;
+}
+
 function goToPreviousReportsPage() {
   currentReportsPage.value = Math.max(1, currentReportsPage.value - 1);
 }
@@ -1030,9 +1053,10 @@ function resetCylinderFilters() {
   refreshCylinders();
 }
 
+// Formu atiestatīšana nodrošina, ka pēc saglabāšanas netiek atstāti vecie ievaddati.
 function resetCylinderForm() {
   cylinderForm.id = null;
-  cylinderForm.status_id = statuses.value[0] ? String(statuses.value[0].id) : '';
+  cylinderForm.status_id = managementStatuses.value[0] ? String(managementStatuses.value[0].id) : '';
   cylinderForm.serial_number = '';
   cylinderForm.capacity = '11';
   cylinderForm.manufacture_date = '';
@@ -1115,6 +1139,11 @@ function startSelectedEmployeeEdit() {
 }
 
 function selectCylinder(cylinder) {
+  if (isIssuedCylinder(cylinder)) {
+    setNotice('error', 'Balonu nevar rediģēt, kamēr tas atrodas pie klienta.');
+    return;
+  }
+
   cylinderForm.id = cylinder.id;
   cylinderForm.status_id = String(cylinder.status_id);
   cylinderForm.serial_number = cylinder.serial_number;
@@ -1124,6 +1153,7 @@ function selectCylinder(cylinder) {
   cylinderForm.notes = cylinder.notes || '';
 }
 
+// Sesiju atjauno pēc API, lai sānjoslā un profila blokos vienmēr būtu svaigi dati.
 async function refreshSession() {
   const response = await api.get('/me');
   session.value = {
@@ -1134,6 +1164,7 @@ async function refreshSession() {
   setSession(session.value);
 }
 
+// Tālāk ir atsevišķi datu atsvaidzināšanas pieprasījumi katram moduļa blokam.
 async function refreshDashboard() {
   const response = await api.get('/dashboard');
   Object.assign(dashboard, response.data.data);
@@ -1144,8 +1175,9 @@ async function refreshStatuses() {
   const response = await api.get('/statuses');
   statuses.value = response.data.data;
 
-  if (!cylinderForm.status_id && statuses.value[0]) {
-    cylinderForm.status_id = String(statuses.value[0].id);
+  // Ja forma vēl nav aizpildīta, ieliek pirmo pieejamo statusu kā drošu noklusējumu.
+  if (!cylinderForm.status_id && managementStatuses.value[0]) {
+    cylinderForm.status_id = String(managementStatuses.value[0].id);
   }
 
   if (!returnForm.status_id && returnStatuses.value[0]) {
@@ -1178,6 +1210,7 @@ async function refreshClients() {
   clients.value = response.data.data;
   pages.clients = clampPage(pages.clients, clients.value.length, itemsPerPage);
 
+  // Ja atlasītais ieraksts ir izdzēsts, iztīra izvēli, lai forma nerādītu nederīgu ID.
   if (deleteClientId.value && !clients.value.some((client) => String(client.id) === deleteClientId.value)) {
     deleteClientId.value = '';
   }
@@ -1251,6 +1284,16 @@ async function bootstrap() {
 }
 
 async function applyStatusUpdate(cylinder) {
+  if (isIssuedCylinder(cylinder)) {
+    setNotice('error', 'Statusu uz "pie klienta" un no tā maina sadaļā Izsniegšana un atgriešana.');
+    return;
+  }
+
+  if (isIssuedStatusId(statusDrafts[cylinder.id])) {
+    setNotice('error', 'Balonu pārvaldībā nevar iestatīt statusu "pie klienta". To dara sadaļā Izsniegšana un atgriešana.');
+    return;
+  }
+
   try {
     await api.patch(`/cylinders/${cylinder.id}/status`, {
       status_id: statusDrafts[cylinder.id],
@@ -1264,6 +1307,21 @@ async function applyStatusUpdate(cylinder) {
 }
 
 async function submitCylinder() {
+  if (cylinderForm.id) {
+    const cylinder = cylinders.value.find((item) => item.id === cylinderForm.id);
+
+    if (cylinder && isIssuedCylinder(cylinder)) {
+      setNotice('error', 'Balonu nevar rediģēt, kamēr tas atrodas pie klienta.');
+      resetCylinderForm();
+      return;
+    }
+  }
+
+  if (isIssuedStatusId(cylinderForm.status_id)) {
+    setNotice('error', 'Balonu pārvaldībā nevar iestatīt statusu "pie klienta". To dara sadaļā Izsniegšana un atgriešana.');
+    return;
+  }
+
   const payload = {
     ...cylinderForm,
     status_id: Number(cylinderForm.status_id),

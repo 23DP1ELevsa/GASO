@@ -90,7 +90,7 @@ class AuthController extends Controller
 
     private function adminRegistrationAvailable(): bool
     {
-        return ! Employee::query()->where('role', 'administrators')->exists();
+        return ! Employee::query()->exists() && ! Client::query()->exists();
     }
 
     private function createSessionPayload(Client|Employee $actor, string $actorType): array
