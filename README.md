@@ -75,59 +75,8 @@ Frontend automātiski sazināsies ar backend API adresi:
 http://127.0.0.1:8000/api
 ```
 
+
 Administratora reģistrācijas sadaļa atrodas login lapā. Tā ļauj publiski izveidot tikai pirmo administratoru; kad pirmais administrators ir izveidots, nākamos administratorus var pievienot tikai no administratora paneļa.
-
-## Backend palaišana
-
-Atver termināli mapē `GASO/Backend` un izpildi:
-
-```powershell
-composer install
-copy .env.example .env
-php artisan key:generate
-php artisan migrate:fresh --seed
-php artisan serve
-```
-
-Backend būs pieejams šeit:
-
-```text
-http://127.0.0.1:8000
-```
-
-Ja atkarības un `.env` jau ir sagatavoti, ikdienas palaišanai parasti pietiek ar:
-
-```powershell
-php artisan serve
-```
-
-## Frontend palaišana
-
-Atver termināli mapē `GASO/Frontend` un izpildi:
-
-```powershell
-npm install
-copy .env.example .env
-npm run dev
-```
-
-Frontend būs pieejams šeit:
-
-```text
-http://127.0.0.1:5173
-```
-
-Ja atkarības un `.env` jau ir sagatavoti, ikdienas palaišanai parasti pietiek ar:
-
-```powershell
-npm run dev
-```
-
-Frontend izmanto backend API adresi:
-
-```text
-http://127.0.0.1:8000/api
-```
 
 ## Demo piekļuves dati
 
